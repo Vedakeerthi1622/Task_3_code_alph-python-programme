@@ -1,0 +1,78 @@
+import pygame
+import random
+import sys
+
+# Initialize Pygame
+pygame.init()
+
+# Set up display
+width, height = 400, 400
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Pacman Game")
+
+# Colors
+yellow = (255, 255, 0)
+green = (0, 255, 0)
+
+# Pacman properties
+pacman_radius = 15
+pacman_x = width // 2
+pacman_y = height // 2
+pacman_speed = 2
+pacman_direction = 0  # 0: right, 1: down, 2: left, 3: up
+
+# Food properties
+num_balls = 10
+balls = [{'x': random.randint(15, width - 15), 'y': random.randint(15, height - 15), 'eaten': False} for _ in range(num_balls)]
+ball_radius = 5
+
+def draw_pacman(x, y):
+    pygame.draw.arc(screen, yellow, (x - pacman_radius, y - pacman_radius, pacman_radius*2, pacman_radius*2), 0.2 * pygame.pi, 1.8 * pygame.pi)
+    pygame.draw.line(screen, yellow, (x, y), (x + pacman_radius, y))
+    pygame.draw.line(screen, yellow, (x, y), (x - pacman_radius, y))
+
+def draw_ball(ball):
+    if not ball['eaten']:
+        pygame.draw.circle(screen, green, (ball['x'], ball['y']), ball_radius)
+
+def main():
+    clock = pygame.time.Clock()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RIGHT] and pacman_x < width - pacman_speed - pacman_radius:
+            pacman_x += pacman_speed
+            pacman_direction = 0
+        if keys[pygame.K_DOWN] and pacman_y < height - pacman_speed - pacman_radius:
+            pacman_y += pacman_speed
+            pacman_direction = 1
+        if keys[pygame.K_LEFT] and pacman_x > pacman_speed + pacman_radius:
+            pacman_x -= pacman_speed
+            pacman_direction = 2
+        if keys[pygame.K_UP] and pacman_y > pacman_speed + pacman_radius:
+            pacman_y -= pacman_speed
+            pacman_direction = 3
+
+        # Check collision with balls
+        for ball in balls:
+            dx = pacman_x - ball['x']
+            dy = pacman_y - ball['y']
+            distance = (dx ** 2 + dy ** 2) ** 0.5
+
+            if distance < pacman_radius + ball_radius:
+                ball['eaten'] = True
+
+        screen.fill((0, 0, 0))
+        for ball in balls:
+            draw_ball(ball)
+        draw_pacman(pacman_x, pacman_y)
+        pygame.display.flip()
+        clock.tick(60)
+
+if __name__ == "__main__":
+    main()
